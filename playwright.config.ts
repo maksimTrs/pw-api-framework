@@ -21,7 +21,7 @@ export default defineConfig({
     projects: [
         {
             name: 'api',
-            testMatch: /api\//,
+            testDir: './tests/api',
         },
     ],
 });
