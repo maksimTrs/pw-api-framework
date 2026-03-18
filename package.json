@@ -1,0 +1,44 @@
+{
+  "name": "pw-api-framework",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Playwright API test automation framework — TypeScript, AJV schema validation, GitHub Actions CI",
+  "scripts": {
+    "test": "npx playwright test",
+    "test:verbose": "cross-env API_LOG=verbose npx playwright test",
+    "test:grep": "npx playwright test --grep",
+    "test:verbose:grep": "cross-env API_LOG=verbose npx playwright test --grep",
+    "test:verbose:smoke": "cross-env API_LOG=verbose npx playwright test --grep @smoke",
+    "test:verbose:articles": "cross-env API_LOG=verbose npx playwright test --grep @articles",
+    "test:schema": "npx playwright test --grep @schema",
+    "test:verbose:schema": "cross-env API_LOG=verbose npx playwright test --grep @schema",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
+  "keywords": [
+    "playwright",
+    "api-testing",
+    "typescript",
+    "test-automation"
+  ],
+  "author": "Maksim Tarasov",
+  "license": "ISC",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@faker-js/faker": "^10.3.0",
+    "@playwright/test": "^1.58.2",
+    "@types/node": "^25.5.0",
+    "ajv": "^8.18.0",
+    "ajv-formats": "^3.0.1",
+    "cross-env": "^10.1.0",
+    "dotenv": "^17.3.1",
+    "eslint": "^10.0.3",
+    "eslint-plugin-playwright": "^2.10.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.57.0"
+  }
+}
