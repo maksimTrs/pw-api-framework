@@ -1,8 +1,40 @@
 import type {APIResponse} from '@playwright/test';
 
+const SENSITIVE_FIELDS = new Set(['password', 'token', 'authorization']);
+
+/** Recursively replaces values of sensitive keys with [REDACTED] */
+export function maskSensitive(data: unknown): unknown {
+    if (data === null || data === undefined || typeof data !== 'object') {
+        return data;
+    }
+
+    if (Array.isArray(data)) {
+        return data.map(item => maskSensitive(item));
+    }
+
+    const result: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
+        if (SENSITIVE_FIELDS.has(key.toLowerCase())) {
+            result[key] = '[REDACTED]';
+            continue;
+        }
+        result[key] = maskSensitive(value);
+    }
+    return result;
+}
+
+/** Masks sensitive fields in a JSON string (parsed → masked → serialized) */
+export function maskSensitiveText(text: string): string {
+    try {
+        const parsed: unknown = JSON.parse(text);
+        return JSON.stringify(maskSensitive(parsed));
+    } catch {
+        return text;
+    }
+}
+
 export class ApiLogger {
     private static readonly SEPARATOR = '─'.repeat(70);
-    private static readonly SENSITIVE_FIELDS = new Set(['password', 'token', 'authorization']);
 
     static create(logLevel: string): ApiLogger | undefined {
         return logLevel === 'verbose' ? new ApiLogger() : undefined;
@@ -16,7 +48,7 @@ export class ApiLogger {
         ];
 
         const visibleHeaders = Object.entries(headers)
-            .filter(([key]) => !ApiLogger.SENSITIVE_FIELDS.has(key.toLowerCase()));
+            .filter(([key]) => !SENSITIVE_FIELDS.has(key.toLowerCase()));
 
         if (visibleHeaders.length > 0) {
             lines.push('  Headers:');
@@ -27,7 +59,7 @@ export class ApiLogger {
 
         if (body && Object.keys(body).length > 0) {
             lines.push('  Body:');
-            lines.push(this.indentJson(this.maskSensitive(body)));
+            lines.push(this.indentJson(maskSensitive(body)));
         }
 
         console.log(lines.join('\n'));
@@ -41,7 +73,7 @@ export class ApiLogger {
         const body = await this.parseBody(response);
         if (body !== null) {
             lines.push('  Body:');
-            lines.push(this.indentJson(this.maskSensitive(body)));
+            lines.push(this.indentJson(maskSensitive(body)));
         }
 
         lines.push(ApiLogger.SEPARATOR);
@@ -63,25 +95,5 @@ export class ApiLogger {
             .split('\n')
             .map(line => `    ${line}`)
             .join('\n');
-    }
-
-    private maskSensitive(data: unknown): unknown {
-        if (data === null || data === undefined || typeof data !== 'object') {
-            return data;
-        }
-
-        if (Array.isArray(data)) {
-            return data.map(item => this.maskSensitive(item));
-        }
-
-        const result: Record<string, unknown> = {};
-        for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
-            if (ApiLogger.SENSITIVE_FIELDS.has(key.toLowerCase())) {
-                result[key] = '[REDACTED]';
-                continue;
-            }
-            result[key] = this.maskSensitive(value);
-        }
-        return result;
     }
 }

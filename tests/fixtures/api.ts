@@ -1,7 +1,7 @@
 import {test as base, expect as baseExpect, type APIResponse} from '@playwright/test';
 import {RequestHandler} from '@helpers/request-handler';
 import {ArticleApi} from '@helpers/articleApi';
-import {ApiLogger} from '@helpers/logger';
+import {ApiLogger, maskSensitiveText} from '@helpers/logger';
 import {validateSchema} from '@helpers/schemaValidator';
 import {env} from '@helpers/envConfig';
 import type {UserResponse} from '@models/user';
@@ -17,10 +17,11 @@ export const expect = baseExpect.extend({
         if (!pass) {
             try {
                 const text = await response.text();
+                const masked = maskSensitiveText(text);
                 const maxLength = 1000;
-                responseBody = text.length > maxLength
-                    ? text.substring(0, maxLength) + '...(truncated)'
-                    : text;
+                responseBody = masked.length > maxLength
+                    ? masked.substring(0, maxLength) + '...(truncated)'
+                    : masked;
             } catch {
                 responseBody = '<unable to read body>';
             }
@@ -100,7 +101,7 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
         });
 
         if (!response.ok()) {
-            const text = await response.text();
+            const text = maskSensitiveText(await response.text());
             throw new Error(
                 `Login failed (status ${response.status()}): ${text}\n` +
                 `Check TEST_USER_EMAIL / TEST_USER_PASSWORD environment variables.`,

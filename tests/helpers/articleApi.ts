@@ -1,5 +1,6 @@
 import type {APIResponse} from '@playwright/test';
 import {RequestHandler} from '@helpers/request-handler';
+import {maskSensitiveText} from '@helpers/logger';
 import type {Article, ArticlePayload, ArticleResponse, ArticlesResponse} from '@models/article';
 
 interface GetArticlesParams {
@@ -17,7 +18,7 @@ export class ArticleApi {
     async getArticles(params?: GetArticlesParams): Promise<ArticlesResponse> {
         const response = await this.getArticlesResponse(params);
         if (response.status() !== 200) {
-            throw new Error(`GET /articles expected 200, got ${response.status()}: ${await response.text()}`);
+            throw new Error(`GET /articles expected 200, got ${response.status()}: ${maskSensitiveText(await response.text())}`);
         }
         return await response.json() as ArticlesResponse;
     }
@@ -36,7 +37,7 @@ export class ArticleApi {
     async createArticle(payload: ArticlePayload): Promise<Article> {
         const response = await this.createArticleResponse(payload);
         if (response.status() !== 201) {
-            throw new Error(`POST /articles expected 201, got ${response.status()}: ${await response.text()}`);
+            throw new Error(`POST /articles expected 201, got ${response.status()}: ${maskSensitiveText(await response.text())}`);
         }
         const body = await response.json() as ArticleResponse;
         return body.article;
@@ -51,7 +52,7 @@ export class ArticleApi {
     async updateArticle(slug: string, payload: ArticlePayload): Promise<Article> {
         const response = await this.updateArticleResponse(slug, payload);
         if (response.status() !== 200) {
-            throw new Error(`PUT /articles/${slug} expected 200, got ${response.status()}: ${await response.text()}`);
+            throw new Error(`PUT /articles/${slug} expected 200, got ${response.status()}: ${maskSensitiveText(await response.text())}`);
         }
         const body = await response.json() as ArticleResponse;
         return body.article;
@@ -66,7 +67,7 @@ export class ArticleApi {
     async deleteArticle(slug: string): Promise<void> {
         const response = await this.deleteArticleResponse(slug);
         if (response.status() !== 204) {
-            throw new Error(`DELETE /articles/${slug} expected 204, got ${response.status()}: ${await response.text()}`);
+            throw new Error(`DELETE /articles/${slug} expected 204, got ${response.status()}: ${maskSensitiveText(await response.text())}`);
         }
     }
 

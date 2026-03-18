@@ -22,6 +22,9 @@ export default defineConfig({
         {
             name: 'api',
             testDir: './tests/api',
+            use: {
+                trace: 'off',
+            },
         },
     ],
 });
