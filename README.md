@@ -44,7 +44,7 @@ eslint.config.mjs           — ESLint 9 flat config
 
 ```bash
 # Clone
-git clone <repo-url>
+git clone https://github.com/maksimTrs/pw-api-framework.git
 cd pw-api-framework
 
 # Install dependencies
