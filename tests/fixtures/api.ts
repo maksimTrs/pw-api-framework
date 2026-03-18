@@ -1,8 +1,9 @@
-import {test as base, expect as baseExpect} from '@playwright/test';
-import type {APIResponse} from '@playwright/test';
-import {RequestHandler, RequestOptions} from '@helpers/request-handler';
+import {test as base, expect as baseExpect, type APIResponse} from '@playwright/test';
+import {RequestHandler} from '@helpers/request-handler';
+import {ArticleApi} from '@helpers/articleApi';
 import {ApiLogger} from '@helpers/logger';
 import {validateSchema} from '@helpers/schemaValidator';
+import {env} from '@helpers/envConfig';
 import type {UserResponse} from '@models/user';
 import {testUser} from '@data/testUser';
 
@@ -73,20 +74,14 @@ export const expect = baseExpect.extend({
     },
 });
 
-interface AuthorizedApi {
-    get(options: RequestOptions): Promise<APIResponse>;
-    post(options: RequestOptions): Promise<APIResponse>;
-    put(options: RequestOptions): Promise<APIResponse>;
-    delete(options: RequestOptions): Promise<APIResponse>;
-}
-
 interface ArticleCleanup {
     track(slug: string): void;
 }
 
 interface TestFixtures {
     api: RequestHandler;
-    authApi: AuthorizedApi;
+    authApi: RequestHandler;
+    articleApi: ArticleApi;
     articleCleanup: ArticleCleanup;
 }
 
@@ -96,12 +91,8 @@ interface WorkerFixtures {
 
 export const test = base.extend<TestFixtures, WorkerFixtures>({
     authToken: [async ({playwright}, use) => {
-        if (!process.env.BASE_URL) {
-            throw new Error('>>> BASE_URL environment variable is not set <<<');
-        }
-        const baseURL = process.env.BASE_URL;
-        const context = await playwright.request.newContext({baseURL});
-        const api = new RequestHandler(context, baseURL, ApiLogger.create());
+        const context = await playwright.request.newContext({baseURL: env.BASE_URL});
+        const api = new RequestHandler(context, env.BASE_URL, ApiLogger.create(env.API_LOG));
 
         const response = await api.post({
             path: '/users/login',
@@ -121,24 +112,17 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
         await use(body.user.token);
     }, {scope: 'worker'}],
 
-    api: async ({request, baseURL}, use) => {
-        const requestHandler = new RequestHandler(request, baseURL!, ApiLogger.create());
+    api: async ({request}, use) => {
+        const requestHandler = new RequestHandler(request, env.BASE_URL, ApiLogger.create(env.API_LOG));
         await use(requestHandler);
     },
 
     authApi: async ({api, authToken}, use) => {
-        const authHeaders = {Authorization: `Token ${authToken}`};
+        await use(api.withHeaders({Authorization: `Token ${authToken}`}));
+    },
 
-        await use({
-            get: (options) =>
-                api.get({...options, headers: {...options.headers, ...authHeaders}}),
-            post: (options) =>
-                api.post({...options, headers: {...options.headers, ...authHeaders}}),
-            put: (options) =>
-                api.put({...options, headers: {...options.headers, ...authHeaders}}),
-            delete: (options) =>
-                api.delete({...options, headers: {...options.headers, ...authHeaders}}),
-        });
+    articleApi: async ({authApi}, use) => {
+        await use(new ArticleApi(authApi));
     },
 
     articleCleanup: async ({authApi}, use) => {
@@ -150,14 +134,15 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
             }
         });
 
-        // Teardown: Playwright guarantees this code runs even if the test fails
-        for (const slug of slugs) {
-            try {
-                await authApi.delete({
-                    path: `/articles/${slug}`,
-                });
-            } catch (error) {
-                console.warn(`Failed to delete article "${slug}":`, error);
+        // Teardown: parallel cleanup, Playwright guarantees this runs even if the test fails
+        const results = await Promise.allSettled(
+            slugs.map(slug => authApi.delete({path: `/articles/${slug}`})),
+        );
+
+        for (let i = 0; i < results.length; i++) {
+            const result = results[i]!;
+            if (result.status === 'rejected') {
+                console.warn(`Failed to delete article "${slugs[i]!}":`, result.reason);
             }
         }
     },

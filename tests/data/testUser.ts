@@ -1,4 +1,6 @@
+import {env} from '@helpers/envConfig';
+
 export const testUser = {
-    email: process.env.TEST_USER_EMAIL ?? '',
-    password: process.env.TEST_USER_PASSWORD ?? '',
+    email: env.TEST_USER_EMAIL,
+    password: env.TEST_USER_PASSWORD,
 } as const;

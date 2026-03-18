@@ -1,4 +1,4 @@
-import {APIRequestContext, APIResponse} from '@playwright/test';
+import type {APIRequestContext, APIResponse} from '@playwright/test';
 import {ApiLogger} from '@helpers/logger';
 
 export interface RequestOptions {
@@ -13,36 +13,50 @@ export class RequestHandler {
     constructor(
         private readonly request: APIRequestContext,
         private readonly defaultBaseUrl: string,
-        private readonly logger?: ApiLogger
+        private readonly logger?: ApiLogger,
+        private readonly defaultHeaders: Record<string, string> = {},
     ) {}
+
+    withHeaders(headers: Record<string, string>): RequestHandler {
+        return new RequestHandler(
+            this.request,
+            this.defaultBaseUrl,
+            this.logger,
+            {...this.defaultHeaders, ...headers},
+        );
+    }
 
     async get(options: RequestOptions): Promise<APIResponse> {
         const url = this.buildUrl(options);
-        return this.execute('GET', url, options.headers ?? {}, () =>
-            this.request.get(url, {headers: options.headers})
+        const headers = {...this.defaultHeaders, ...options.headers};
+        return this.execute('GET', url, headers, () =>
+            this.request.get(url, {headers})
         );
     }
 
     async post(options: RequestOptions): Promise<APIResponse> {
         const url = this.buildUrl(options);
-        return this.execute('POST', url, options.headers ?? {}, () =>
-            this.request.post(url, {headers: options.headers, data: options.body}),
+        const headers = {...this.defaultHeaders, ...options.headers};
+        return this.execute('POST', url, headers, () =>
+            this.request.post(url, {headers, data: options.body}),
             options.body
         );
     }
 
     async put(options: RequestOptions): Promise<APIResponse> {
         const url = this.buildUrl(options);
-        return this.execute('PUT', url, options.headers ?? {}, () =>
-            this.request.put(url, {headers: options.headers, data: options.body}),
+        const headers = {...this.defaultHeaders, ...options.headers};
+        return this.execute('PUT', url, headers, () =>
+            this.request.put(url, {headers, data: options.body}),
             options.body
         );
     }
 
     async delete(options: RequestOptions): Promise<APIResponse> {
         const url = this.buildUrl(options);
-        return this.execute('DELETE', url, options.headers ?? {}, () =>
-            this.request.delete(url, {headers: options.headers})
+        const headers = {...this.defaultHeaders, ...options.headers};
+        return this.execute('DELETE', url, headers, () =>
+            this.request.delete(url, {headers})
         );
     }
 

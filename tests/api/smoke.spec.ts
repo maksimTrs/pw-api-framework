@@ -1,6 +1,6 @@
 import {expect, test} from '@fixtures/api';
-import {ArticlesResponse, ArticleResponse} from '@models/article';
-import {TagsResponse} from '@models/tag';
+import type {ArticlesResponse, ArticleResponse} from '@models/article';
+import type {TagsResponse} from '@models/tag';
 import {createArticlePayload} from '@data/articleFactory';
 import {uniqueTitle} from '@helpers/utils';
 
@@ -52,21 +52,13 @@ test.describe('Smoke tests', () => {
         expect.soft(body.article.author.username).toBeTruthy();
     });
 
-    test('PUT /articles', {tag: '@smoke'}, async ({authApi, articleCleanup}) => {
-        // Setup: create article to update
-        const createPayload = createArticlePayload();
-
-        const createResponse = await authApi.post({
-            path: '/articles/',
-            body: createPayload,
+    test('PUT /articles', {tag: '@smoke'}, async ({authApi, articleApi, articleCleanup}) => {
+        const created = await test.step('Setup: create article', async () => {
+            const article = await articleApi.createArticle(createArticlePayload());
+            articleCleanup.track(article.slug);
+            return article;
         });
 
-        await expect(createResponse).toHaveStatus(201);
-
-        const created = await createResponse.json() as ArticleResponse;
-        const slug = created.article.slug;
-
-        // Update article
         const updatePayload = createArticlePayload({
             title: uniqueTitle('Updated'),
             description: 'updated',
@@ -74,48 +66,43 @@ test.describe('Smoke tests', () => {
             tagList: [],
         });
 
-        const response = await authApi.put({
-            path: `/articles/${slug}`,
-            body: updatePayload,
+        const response = await test.step('Update article', async () => {
+            return authApi.put({
+                path: `/articles/${created.slug}`,
+                body: updatePayload,
+            });
         });
 
-        await expect(response).toHaveStatus(200);
+        await test.step('Verify updated article', async () => {
+            await expect(response).toHaveStatus(200);
 
-        const body = await response.json() as ArticleResponse;
-        articleCleanup.track(body.article.slug);
+            const body = await response.json() as ArticleResponse;
+            articleCleanup.track(body.article.slug);
 
-        expect.soft(body.article.title).toBe(updatePayload.article.title);
-        expect.soft(body.article.slug).not.toBe(slug);
-        expect.soft(body.article.description).toBe('updated');
-        expect.soft(body.article.body).toBe('updated');
+            expect.soft(body.article.title).toBe(updatePayload.article.title);
+            expect.soft(body.article.slug).not.toBe(created.slug);
+            expect.soft(body.article.description).toBe('updated');
+            expect.soft(body.article.body).toBe('updated');
+        });
     });
 
-    test('DELETE /articles', {tag: '@smoke'}, async ({authApi}) => {
-        // Setup: create article to delete
-        const createPayload = createArticlePayload();
-
-        const createResponse = await authApi.post({
-            path: '/articles/',
-            body: createPayload,
+    test('DELETE /articles', {tag: '@smoke'}, async ({authApi, articleApi}) => {
+        const created = await test.step('Setup: create article', async () => {
+            return articleApi.createArticle(createArticlePayload());
         });
 
-        await expect(createResponse).toHaveStatus(201);
-
-        const created = await createResponse.json() as ArticleResponse;
-        const slug = created.article.slug;
-
-        // Delete article
-        const deleteResponse = await authApi.delete({
-            path: `/articles/${slug}`,
+        await test.step('Delete article', async () => {
+            const deleteResponse = await authApi.delete({
+                path: `/articles/${created.slug}`,
+            });
+            await expect(deleteResponse).toHaveStatus(204);
         });
 
-        await expect(deleteResponse).toHaveStatus(204);
-
-        // Verify article no longer exists
-        const getResponse = await authApi.get({
-            path: `/articles/${slug}`,
+        await test.step('Verify article no longer exists', async () => {
+            const getResponse = await authApi.get({
+                path: `/articles/${created.slug}`,
+            });
+            await expect(getResponse).toHaveStatus(404);
         });
-
-        await expect(getResponse).toHaveStatus(404);
     });
 });

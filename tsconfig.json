@@ -23,6 +23,7 @@
   },
   "include": [
     "tests/**/*.ts",
+    "tools/**/*.ts",
     "playwright.config.ts"
   ]
 }

@@ -1,13 +1,5 @@
 import {defineConfig} from '@playwright/test';
-
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-import dotenv from 'dotenv';
-import path from 'path';
-
-dotenv.config({path: path.resolve(__dirname, '.env'), quiet: true});
+import {env} from '@helpers/envConfig';
 
 export default defineConfig({
     testDir: './tests',
@@ -23,7 +15,7 @@ export default defineConfig({
             : []),
     ],
     use: {
-        baseURL: process.env.BASE_URL,
+        baseURL: env.BASE_URL,
         trace: 'retain-on-failure',
     },
     projects: [

@@ -1,11 +1,11 @@
-import {APIResponse} from '@playwright/test';
+import type {APIResponse} from '@playwright/test';
 
 export class ApiLogger {
     private static readonly SEPARATOR = '─'.repeat(70);
     private static readonly SENSITIVE_FIELDS = new Set(['password', 'token', 'authorization']);
 
-    static create(): ApiLogger | undefined {
-        return process.env.API_LOG === 'verbose' ? new ApiLogger() : undefined;
+    static create(logLevel: string): ApiLogger | undefined {
+        return logLevel === 'verbose' ? new ApiLogger() : undefined;
     }
 
     logRequest(method: string, url: string, headers: Record<string, string>, body?: object): void {
@@ -27,7 +27,7 @@ export class ApiLogger {
 
         if (body && Object.keys(body).length > 0) {
             lines.push('  Body:');
-            lines.push(this.indentJson(this.stripSensitive(body)));
+            lines.push(this.indentJson(this.maskSensitive(body)));
         }
 
         console.log(lines.join('\n'));
@@ -41,7 +41,7 @@ export class ApiLogger {
         const body = await this.parseBody(response);
         if (body !== null) {
             lines.push('  Body:');
-            lines.push(this.indentJson(this.stripSensitive(body)));
+            lines.push(this.indentJson(this.maskSensitive(body)));
         }
 
         lines.push(ApiLogger.SEPARATOR);
@@ -65,19 +65,22 @@ export class ApiLogger {
             .join('\n');
     }
 
-    private stripSensitive(data: unknown): unknown {
+    private maskSensitive(data: unknown): unknown {
         if (data === null || data === undefined || typeof data !== 'object') {
             return data;
         }
 
         if (Array.isArray(data)) {
-            return data.map(item => this.stripSensitive(item));
+            return data.map(item => this.maskSensitive(item));
         }
 
         const result: Record<string, unknown> = {};
         for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
-            if (ApiLogger.SENSITIVE_FIELDS.has(key)) continue;
-            result[key] = this.stripSensitive(value);
+            if (ApiLogger.SENSITIVE_FIELDS.has(key)) {
+                result[key] = '[REDACTED]';
+                continue;
+            }
+            result[key] = this.maskSensitive(value);
         }
         return result;
     }

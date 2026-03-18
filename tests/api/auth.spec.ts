@@ -1,6 +1,7 @@
 import {faker} from '@faker-js/faker';
 import {expect, test} from '@fixtures/api';
-import {ErrorResponse} from '@models/error';
+import type {ErrorResponse} from '@models/error';
+import {errorResponseSchema} from '@schemas/errorSchemas';
 import {testUser} from '@data/testUser';
 
 const invalidLogins = [
@@ -52,10 +53,12 @@ test.describe('Login validation',  {tag: ['@regression', '@login']}, () => {
 
             await expect(response).toHaveStatus(expectedStatus);
 
-            const body = await response.json() as ErrorResponse;
+            const body: unknown = await response.json();
+            expect(body).toMatchSchema(errorResponseSchema);
 
-            expect(body.errors[expectedField]).toBeDefined();
-            expect(body.errors[expectedField]).toContain(expectedError);
+            const errorBody = body as ErrorResponse;
+            expect(errorBody.errors[expectedField]).toBeDefined();
+            expect(errorBody.errors[expectedField]).toContain(expectedError);
         });
     }
 });

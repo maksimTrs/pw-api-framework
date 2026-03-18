@@ -17,13 +17,8 @@ test.describe('Articles API — Schema Validation', () => {
         expect(body).toMatchSchema(articlesResponseSchema);
     });
 
-    test('POST /articles response matches schema', {tag: ['@schema', '@articles']}, async ({authApi, articleCleanup}) => {
-        const payload = createArticlePayload();
-
-        const response = await authApi.post({
-            path: '/articles/',
-            body: payload,
-        });
+    test('POST /articles response matches schema', {tag: ['@schema', '@articles']}, async ({articleApi, articleCleanup}) => {
+        const response = await articleApi.createArticleResponse(createArticlePayload());
 
         await expect(response).toHaveStatus(201);
 

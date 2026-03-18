@@ -12,7 +12,7 @@ const userSchema = {
     },
     required: ['email', 'username', 'bio', 'image', 'token'],
     additionalProperties: false,
-};
+} as const;
 
 export const userResponseSchema = {
     type: 'object',
@@ -21,4 +21,4 @@ export const userResponseSchema = {
     },
     required: ['user'],
     additionalProperties: false,
-};
+} as const;

@@ -11,4 +11,4 @@ export const tagsResponseSchema = {
     },
     required: ['tags'],
     additionalProperties: false,
-};
+} as const;

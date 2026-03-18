@@ -13,7 +13,7 @@ const authorSchema = {
     },
     required: ['username', 'bio', 'image', 'following'],
     additionalProperties: false,
-};
+} as const;
 
 export const articleSchema = {
     type: 'object',
@@ -37,7 +37,7 @@ export const articleSchema = {
         'createdAt', 'updatedAt', 'favorited', 'favoritesCount', 'author',
     ],
     additionalProperties: false,
-};
+} as const;
 
 export const articlesResponseSchema = {
     type: 'object',
@@ -50,7 +50,7 @@ export const articlesResponseSchema = {
     },
     required: ['articles', 'articlesCount'],
     additionalProperties: false,
-};
+} as const;
 
 export const articleResponseSchema = {
     type: 'object',
@@ -59,4 +59,4 @@ export const articleResponseSchema = {
     },
     required: ['article'],
     additionalProperties: false,
-};
+} as const;
