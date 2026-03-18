@@ -5,11 +5,8 @@ import type {ArticleResponse} from '@models/article';
 
 test.describe('Articles API — Schema Validation', () => {
 
-    test('GET /articles response matches schema', {tag: ['@schema', '@articles']}, async ({api}) => {
-        const response = await api.get({
-            path: '/articles',
-            params: {limit: 10, offset: 0},
-        });
+    test('GET /articles response matches schema', {tag: ['@schema', '@articles']}, async ({articleApi}) => {
+        const response = await articleApi.getArticlesResponse({limit: 10, offset: 0});
 
         await expect(response).toHaveStatus(200);
 

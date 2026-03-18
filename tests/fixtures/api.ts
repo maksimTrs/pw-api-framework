@@ -125,7 +125,7 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
         await use(new ArticleApi(authApi));
     },
 
-    articleCleanup: async ({authApi}, use) => {
+    articleCleanup: async ({articleApi}, use) => {
         const slugs: string[] = [];
 
         await use({
@@ -136,7 +136,7 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
 
         // Teardown: parallel cleanup, Playwright guarantees this runs even if the test fails
         const results = await Promise.allSettled(
-            slugs.map(slug => authApi.delete({path: `/articles/${slug}`})),
+            slugs.map(slug => articleApi.deleteArticleResponse(slug)),
         );
 
         for (let i = 0; i < results.length; i++) {
