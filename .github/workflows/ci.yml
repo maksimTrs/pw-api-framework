@@ -23,6 +23,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs: lint
+    permissions:
+      checks: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -35,6 +37,12 @@ jobs:
           BASE_URL: ${{ secrets.BASE_URL }}
           TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
           TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+      - uses: dorny/test-reporter@v1
+        if: ${{ !cancelled() }}
+        with:
+          name: Test Results
+          path: test-results/junit-report.xml
+          reporter: java-junit
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:

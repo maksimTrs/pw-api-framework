@@ -13,7 +13,8 @@
     "test:schema": "npx playwright test --grep @schema",
     "test:verbose:schema": "cross-env API_LOG=verbose npx playwright test --grep @schema",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "har:filter": "node har-converter.js"
   },
   "keywords": [
     "playwright",

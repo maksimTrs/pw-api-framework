@@ -15,6 +15,17 @@ export default tseslint.config(
         ...playwright.configs['flat/recommended'],
     },
 
+    // Node.js scripts — enable Node globals (console, process, etc.)
+    {
+        files: ['*.js'],
+        languageOptions: {
+            globals: {
+                console: 'readonly',
+                process: 'readonly',
+            },
+        },
+    },
+
     // Ignored directories
     {
         ignores: ['node_modules/', 'test-results/', 'playwright-report/'],

@@ -9,6 +9,10 @@ node_modules/
 /playwright/.cache/
 /playwright/.auth/
 
+# HAR recordings
+*.har
+filtered-har.json
+
 # IDE
 .idea/
 

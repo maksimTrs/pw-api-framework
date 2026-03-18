@@ -66,6 +66,19 @@ cp .env.example .env
 | `npm run lint` | Check code style |
 | `npm run lint:fix` | Auto-fix lint errors |
 
+## HAR Converter
+
+Utility to extract and clean API entries from HAR files recorded via Playwright codegen:
+
+```bash
+# 1. Record HAR
+npx playwright codegen --save-har=networking.har https://conduit-api.bondaracademy.com
+
+# 2. Filter — keeps only API entries, strips headers/cookies/timings
+npm run har:filter
+# Output: filtered-har.json
+```
+
 ## Key Design Decisions
 
 - **Layered architecture** — transport (RequestHandler) knows nothing about endpoints; domain layer (fixtures) handles auth and cleanup; test layer focuses on assertions
