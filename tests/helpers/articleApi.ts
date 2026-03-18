@@ -1,7 +1,6 @@
 import type {APIResponse} from '@playwright/test';
 import {RequestHandler} from '@helpers/request-handler';
-import type {Article, ArticleResponse, ArticlesResponse} from '@models/article';
-import type {ArticlePayload} from '@data/articleFactory';
+import type {Article, ArticlePayload, ArticleResponse, ArticlesResponse} from '@models/article';
 
 interface GetArticlesParams {
     limit?: number;
@@ -45,7 +44,7 @@ export class ArticleApi {
 
     /** POST /articles — raw response, no assertions */
     async createArticleResponse(payload: ArticlePayload): Promise<APIResponse> {
-        return this.api.post({path: '/articles/', body: payload});
+        return this.api.post({path: '/articles', body: payload});
     }
 
     /** PUT /articles/:slug — returns updated Article, asserts 200 */

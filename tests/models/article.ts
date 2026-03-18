@@ -26,3 +26,14 @@ export interface ArticlesResponse {
 export interface ArticleResponse {
     article: Article;
 }
+
+export interface ArticleFields {
+    title: string;
+    description: string;
+    body: string;
+    tagList: string[];
+}
+
+export interface ArticlePayload {
+    article: ArticleFields;
+}

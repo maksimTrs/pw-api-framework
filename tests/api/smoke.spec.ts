@@ -39,7 +39,7 @@ test.describe('Smoke tests', () => {
         const payload = createArticlePayload();
 
         const response = await authApi.post({
-            path: '/articles/',
+            path: '/articles',
             body: payload,
         });
 

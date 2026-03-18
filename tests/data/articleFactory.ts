@@ -1,16 +1,6 @@
 import {faker} from '@faker-js/faker';
 import {uniqueTitle} from '@helpers/utils';
-
-interface ArticleFields {
-    title: string;
-    description: string;
-    body: string;
-    tagList: string[];
-}
-
-export interface ArticlePayload {
-    article: ArticleFields;
-}
+import type {ArticleFields, ArticlePayload} from '@models/article';
 
 export function createArticlePayload(overrides?: Partial<ArticleFields>): ArticlePayload {
     return {
