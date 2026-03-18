@@ -1,10 +1,11 @@
 import {test as base, expect as baseExpect, type APIResponse} from '@playwright/test';
 import {RequestHandler} from '@helpers/request-handler';
 import {ArticleApi} from '@helpers/articleApi';
+import {ProfileApi} from '@helpers/profileApi';
 import {ApiLogger, maskSensitiveText} from '@helpers/logger';
 import {validateSchema} from '@helpers/schemaValidator';
 import {env} from '@helpers/envConfig';
-import type {UserResponse} from '@models/user';
+import type {User, UserResponse} from '@models/user';
 import {testUser} from '@data/testUser';
 
 export const expect = baseExpect.extend({
@@ -84,14 +85,17 @@ interface TestFixtures {
     authApi: RequestHandler;
     articleApi: ArticleApi;
     articleCleanup: ArticleCleanup;
+    profileApi: ProfileApi;
 }
 
 interface WorkerFixtures {
+    loginUser: User;
     authToken: string;
+    testUsername: string;
 }
 
 export const test = base.extend<TestFixtures, WorkerFixtures>({
-    authToken: [async ({playwright}, use) => {
+    loginUser: [async ({playwright}, use) => {
         const context = await playwright.request.newContext({baseURL: env.BASE_URL});
         const api = new RequestHandler(context, env.BASE_URL, ApiLogger.create(env.API_LOG));
 
@@ -110,7 +114,15 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
 
         const body = await response.json() as UserResponse;
         await context.dispose();
-        await use(body.user.token);
+        await use(body.user);
+    }, {scope: 'worker'}],
+
+    authToken: [async ({loginUser}, use) => {
+        await use(loginUser.token);
+    }, {scope: 'worker'}],
+
+    testUsername: [async ({loginUser}, use) => {
+        await use(loginUser.username);
     }, {scope: 'worker'}],
 
     api: async ({request}, use) => {
@@ -124,6 +136,10 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
 
     articleApi: async ({authApi}, use) => {
         await use(new ArticleApi(authApi));
+    },
+
+    profileApi: async ({authApi}, use) => {
+        await use(new ProfileApi(authApi));
     },
 
     articleCleanup: async ({articleApi}, use) => {

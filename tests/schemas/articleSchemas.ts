@@ -3,17 +3,7 @@
 // JSONSchemaType<T> is intentionally NOT used: it has a known limitation
 // with nullable fields (string | null) — see https://github.com/ajv-validator/ajv/issues/2132
 
-const authorSchema = {
-    type: 'object',
-    properties: {
-        username: {type: 'string'},
-        bio: {type: 'string', nullable: true},
-        image: {type: 'string'},
-        following: {type: 'boolean'},
-    },
-    required: ['username', 'bio', 'image', 'following'],
-    additionalProperties: false,
-} as const;
+import {profileSchema} from '@schemas/profileSchemas';
 
 export const articleSchema = {
     type: 'object',
@@ -30,7 +20,7 @@ export const articleSchema = {
         updatedAt: {type: 'string', format: 'date-time'},
         favorited: {type: 'boolean'},
         favoritesCount: {type: 'integer', minimum: 0},
-        author: authorSchema,
+        author: profileSchema,
     },
     required: [
         'slug', 'title', 'description', 'body', 'tagList',
