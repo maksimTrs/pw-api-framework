@@ -76,7 +76,7 @@ export class ApiLogger {
 
         const result: Record<string, unknown> = {};
         for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
-            if (ApiLogger.SENSITIVE_FIELDS.has(key)) {
+            if (ApiLogger.SENSITIVE_FIELDS.has(key.toLowerCase())) {
                 result[key] = '[REDACTED]';
                 continue;
             }

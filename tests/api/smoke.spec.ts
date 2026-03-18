@@ -35,13 +35,10 @@ test.describe('Smoke tests', () => {
         expect.soft(body.tags.length).toBeGreaterThan(0);
     });
 
-    test('POST /articles', {tag: '@smoke'}, async ({authApi, articleCleanup}) => {
+    test('POST /articles', {tag: '@smoke'}, async ({articleApi, articleCleanup}) => {
         const payload = createArticlePayload();
 
-        const response = await authApi.post({
-            path: '/articles',
-            body: payload,
-        });
+        const response = await articleApi.createArticleResponse(payload);
 
         await expect(response).toHaveStatus(201);
 
@@ -52,11 +49,9 @@ test.describe('Smoke tests', () => {
         expect.soft(body.article.author.username).toBeTruthy();
     });
 
-    test('PUT /articles', {tag: '@smoke'}, async ({authApi, articleApi, articleCleanup}) => {
+    test('PUT /articles', {tag: '@smoke'}, async ({articleApi, articleCleanup}) => {
         const created = await test.step('Setup: create article', async () => {
-            const article = await articleApi.createArticle(createArticlePayload());
-            articleCleanup.track(article.slug);
-            return article;
+            return articleApi.createArticle(createArticlePayload());
         });
 
         const updatePayload = createArticlePayload({
@@ -67,10 +62,7 @@ test.describe('Smoke tests', () => {
         });
 
         const response = await test.step('Update article', async () => {
-            return authApi.put({
-                path: `/articles/${created.slug}`,
-                body: updatePayload,
-            });
+            return articleApi.updateArticleResponse(created.slug, updatePayload);
         });
 
         await test.step('Verify updated article', async () => {
@@ -86,22 +78,17 @@ test.describe('Smoke tests', () => {
         });
     });
 
-    test('DELETE /articles', {tag: '@smoke'}, async ({authApi, articleApi}) => {
+    test('DELETE /articles', {tag: '@smoke'}, async ({articleApi}) => {
         const created = await test.step('Setup: create article', async () => {
             return articleApi.createArticle(createArticlePayload());
         });
 
         await test.step('Delete article', async () => {
-            const deleteResponse = await authApi.delete({
-                path: `/articles/${created.slug}`,
-            });
-            await expect(deleteResponse).toHaveStatus(204);
+            await articleApi.deleteArticle(created.slug);
         });
 
         await test.step('Verify article no longer exists', async () => {
-            const getResponse = await authApi.get({
-                path: `/articles/${created.slug}`,
-            });
+            const getResponse = await articleApi.getArticleResponse(created.slug);
             await expect(getResponse).toHaveStatus(404);
         });
     });

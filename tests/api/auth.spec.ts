@@ -42,10 +42,10 @@ const invalidLogins = [
     },
 ];
 
-test.describe('Login validation',  {tag: ['@regression', '@login']}, () => {
+test.describe('Login validation',  {tag: ['@regression', '@auth']}, () => {
 
     for (const {name, credentials, expectedStatus, expectedField, expectedError} of invalidLogins) {
-        test(`POST /users/login with ${name} returns ${expectedStatus}`, {tag: '@auth'}, async ({api}) => {
+        test(`POST /users/login with ${name} returns ${expectedStatus}`, async ({api}) => {
             const response = await api.post({
                 path: '/users/login',
                 body: {user: credentials},

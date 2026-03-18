@@ -1,5 +1,7 @@
 # pw-api-framework
 
+[![CI](https://github.com/maksimTrs/pw-api-framework/actions/workflows/ci.yml/badge.svg)](https://github.com/maksimTrs/pw-api-framework/actions/workflows/ci.yml)
+
 Playwright API test automation framework with TypeScript, AJV schema validation, and GitHub Actions CI.
 
 

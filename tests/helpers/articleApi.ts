@@ -62,6 +62,14 @@ export class ArticleApi {
         return this.api.put({path: `/articles/${slug}`, body: payload});
     }
 
+    /** DELETE /articles/:slug — asserts 204 */
+    async deleteArticle(slug: string): Promise<void> {
+        const response = await this.deleteArticleResponse(slug);
+        if (response.status() !== 204) {
+            throw new Error(`DELETE /articles/${slug} expected 204, got ${response.status()}: ${await response.text()}`);
+        }
+    }
+
     /** DELETE /articles/:slug — raw response (204 has no body) */
     async deleteArticleResponse(slug: string): Promise<APIResponse> {
         return this.api.delete({path: `/articles/${slug}`});
