@@ -1,5 +1,5 @@
 import {expect, test} from '@fixtures/api';
-import type {ArticlesResponse, ArticleResponse} from '@models/article';
+import type {ArticleResponse, ArticlesResponse} from '@models/article';
 import type {TagsResponse} from '@models/tag';
 import {createArticlePayload} from '@data/articleFactory';
 import {uniqueTitle} from '@helpers/utils';
@@ -49,9 +49,9 @@ test.describe('Smoke tests', () => {
         expect.soft(body.article.author.username).toBeTruthy();
     });
 
-    test('PUT /articles', {tag: '@smoke'}, async ({articleApi, articleCleanup}) => {
+    test('PUT /articles', {tag: '@smoke'}, async ({trackedArticleApi}) => {
         const created = await test.step('Setup: create article', async () => {
-            return articleApi.createArticle(createArticlePayload());
+            return trackedArticleApi.createArticle(createArticlePayload());
         });
 
         const updatePayload = createArticlePayload({
@@ -61,20 +61,15 @@ test.describe('Smoke tests', () => {
             tagList: [],
         });
 
-        const response = await test.step('Update article', async () => {
-            return articleApi.updateArticleResponse(created.slug, updatePayload);
+        const updated = await test.step('Update article', async () => {
+            return trackedArticleApi.updateArticle(created.slug, updatePayload);
         });
 
         await test.step('Verify updated article', async () => {
-            await expect(response).toHaveStatus(200);
-
-            const body = await response.json() as ArticleResponse;
-            articleCleanup.track(body.article.slug);
-
-            expect.soft(body.article.title).toBe(updatePayload.article.title);
-            expect.soft(body.article.slug).not.toBe(created.slug);
-            expect.soft(body.article.description).toBe('updated');
-            expect.soft(body.article.body).toBe('updated');
+            expect.soft(updated.title).toBe(updatePayload.article.title);
+            expect.soft(updated.slug).not.toBe(created.slug);
+            expect.soft(updated.description).toBe('updated');
+            expect.soft(updated.body).toBe('updated');
         });
     });
 

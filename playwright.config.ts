@@ -1,12 +1,11 @@
 import {defineConfig} from '@playwright/test';
-import {env} from '@helpers/envConfig';
 
 export default defineConfig({
     testDir: './tests',
     fullyParallel: true,
     forbidOnly: !!process.env.CI,
-    retries: process.env.CI ? 2 : 0,
-    workers: process.env.CI ? 1 : undefined,
+    retries: process.env.CI ? 1 : 0,
+    workers: process.env.CI ? 2 : undefined,
     reporter: [
         ['html', {open: 'never'}],
         ['list'],
@@ -15,13 +14,13 @@ export default defineConfig({
             : []),
     ],
     use: {
-        baseURL: env.BASE_URL,
         trace: 'retain-on-failure',
     },
     projects: [
         {
             name: 'api',
             testDir: './tests/api',
+            timeout: 10_000,
             use: {
                 trace: 'off',
             },

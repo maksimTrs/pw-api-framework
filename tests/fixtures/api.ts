@@ -1,4 +1,4 @@
-import {test as base, expect as baseExpect, type APIResponse} from '@playwright/test';
+import {type APIResponse, expect as baseExpect, test as base} from '@playwright/test';
 import {RequestHandler} from '@helpers/requestHandler';
 import {ArticleApi} from '@helpers/articleApi';
 import {ProfileApi} from '@helpers/profileApi';
@@ -84,6 +84,7 @@ interface TestFixtures {
     api: RequestHandler;
     authApi: RequestHandler;
     articleApi: ArticleApi;
+    trackedArticleApi: ArticleApi;
     articleCleanup: ArticleCleanup;
     profileApi: ProfileApi;
 }
@@ -142,6 +143,30 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
         await use(new ProfileApi(authApi));
     },
 
+    // Auto-cleanup variant: createArticle() and updateArticle() automatically
+    // register slugs for teardown deletion. Use for tests where cleanup is
+    // implicit; use plain articleApi + articleCleanup for raw response methods
+    // or tests that manage their own lifecycle (e.g., DELETE tests).
+    trackedArticleApi: async ({authApi, articleCleanup}, use) => {
+        const api = new ArticleApi(authApi);
+
+        const originalCreate = api.createArticle.bind(api);
+        api.createArticle = async (payload) => {
+            const article = await originalCreate(payload);
+            articleCleanup.track(article.slug);
+            return article;
+        };
+
+        const originalUpdate = api.updateArticle.bind(api);
+        api.updateArticle = async (slug, payload) => {
+            const article = await originalUpdate(slug, payload);
+            articleCleanup.track(article.slug);
+            return article;
+        };
+
+        await use(api);
+    },
+
     articleCleanup: async ({articleApi}, use) => {
         const slugs: string[] = [];
 
@@ -159,7 +184,12 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
         for (let i = 0; i < results.length; i++) {
             const result = results[i]!;
             if (result.status === 'rejected') {
-                console.warn(`Failed to delete article "${slugs[i]!}":`, result.reason);
+                console.warn(`Cleanup network error for "${slugs[i]!}":`, result.reason);
+            } else {
+                const status = result.value.status();
+                if (status !== 204 && status !== 404) {
+                    console.warn(`Cleanup: DELETE "${slugs[i]!}" returned ${status} (expected 204)`);
+                }
             }
         }
     },

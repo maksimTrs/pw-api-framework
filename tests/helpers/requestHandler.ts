@@ -61,8 +61,9 @@ export class RequestHandler {
     }
 
     private buildUrl(options: RequestOptions): string {
-        const base = options.baseUrl ?? this.defaultBaseUrl;
-        const url = new URL(`${base}${options.path}`);
+        const base = (options.baseUrl ?? this.defaultBaseUrl).replace(/\/+$/, '');
+        const path = options.path.startsWith('/') ? options.path : `/${options.path}`;
+        const url = new URL(`${base}${path}`);
 
         if (options.params) {
             for (const [key, value] of Object.entries(options.params)) {
