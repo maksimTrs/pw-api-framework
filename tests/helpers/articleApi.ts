@@ -12,7 +12,11 @@ interface GetArticlesParams {
 }
 
 export class ArticleApi {
-    constructor(private readonly api: RequestHandler) {}
+    constructor(
+        private readonly api: RequestHandler,
+        private readonly onArticleChanged?: (slug: string) => void,
+    ) {
+    }
 
     /** GET /articles — returns typed response, asserts 200 */
     async getArticles(params?: GetArticlesParams): Promise<ArticlesResponse> {
@@ -40,6 +44,7 @@ export class ArticleApi {
             throw new Error(`POST /articles expected 201, got ${response.status()}: ${maskSensitiveText(await response.text())}`);
         }
         const body = await response.json() as ArticleResponse;
+        this.onArticleChanged?.(body.article.slug);
         return body.article;
     }
 
@@ -55,6 +60,7 @@ export class ArticleApi {
             throw new Error(`PUT /articles/${slug} expected 200, got ${response.status()}: ${maskSensitiveText(await response.text())}`);
         }
         const body = await response.json() as ArticleResponse;
+        this.onArticleChanged?.(body.article.slug);
         return body.article;
     }
 

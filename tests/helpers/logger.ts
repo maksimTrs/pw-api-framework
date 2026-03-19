@@ -3,7 +3,7 @@ import type {APIResponse} from '@playwright/test';
 const SENSITIVE_FIELDS = new Set(['password', 'token', 'authorization']);
 
 /** Recursively replaces values of sensitive keys with [REDACTED] */
-export function maskSensitive(data: unknown): unknown {
+function maskSensitive(data: unknown): unknown {
     if (data === null || data === undefined || typeof data !== 'object') {
         return data;
     }

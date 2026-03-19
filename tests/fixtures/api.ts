@@ -148,23 +148,7 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
     // implicit; use plain articleApi + articleCleanup for raw response methods
     // or tests that manage their own lifecycle (e.g., DELETE tests).
     trackedArticleApi: async ({authApi, articleCleanup}, use) => {
-        const api = new ArticleApi(authApi);
-
-        const originalCreate = api.createArticle.bind(api);
-        api.createArticle = async (payload) => {
-            const article = await originalCreate(payload);
-            articleCleanup.track(article.slug);
-            return article;
-        };
-
-        const originalUpdate = api.updateArticle.bind(api);
-        api.updateArticle = async (slug, payload) => {
-            const article = await originalUpdate(slug, payload);
-            articleCleanup.track(article.slug);
-            return article;
-        };
-
-        await use(api);
+        await use(new ArticleApi(authApi, (slug) => articleCleanup.track(slug)));
     },
 
     articleCleanup: async ({articleApi}, use) => {

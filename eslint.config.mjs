@@ -17,6 +17,6 @@ export default tseslint.config(
 
     // Ignored directories
     {
-        ignores: ['node_modules/', 'test-results/', 'playwright-report/'],
+        ignores: ['node_modules/', 'test-results/', 'playwright-report/', 'blob-report/'],
     },
 );

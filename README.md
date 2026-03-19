@@ -33,7 +33,7 @@ Config & Data               — typed environment config, factories, schemas, mo
 ```
 tests/
   api/                      — API test specs
-    schema/                 — JSON Schema validation tests
+    schemas/                — JSON Schema validation tests
   fixtures/                 — Playwright fixtures (auth, API client, cleanup)
   helpers/                  — request handler, API clients, logger, schema validator, env config
   models/                   — TypeScript interfaces (Article, User, Tag, Error)
