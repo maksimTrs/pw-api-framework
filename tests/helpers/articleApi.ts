@@ -1,5 +1,5 @@
 import type {APIResponse} from '@playwright/test';
-import {RequestHandler} from '@helpers/request-handler';
+import {RequestHandler} from '@helpers/requestHandler';
 import {maskSensitiveText} from '@helpers/logger';
 import type {Article, ArticlePayload, ArticleResponse, ArticlesResponse} from '@models/article';
 

@@ -1,5 +1,5 @@
 import {test as base, expect as baseExpect, type APIResponse} from '@playwright/test';
-import {RequestHandler} from '@helpers/request-handler';
+import {RequestHandler} from '@helpers/requestHandler';
 import {ArticleApi} from '@helpers/articleApi';
 import {ProfileApi} from '@helpers/profileApi';
 import {ApiLogger, maskSensitiveText} from '@helpers/logger';
