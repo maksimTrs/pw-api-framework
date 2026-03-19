@@ -57,6 +57,8 @@ jobs:
         with:
           report_paths: test-results/junit-report.xml
           check_name: Test Results
+          detailed_summary: true
+          include_passed: true
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
