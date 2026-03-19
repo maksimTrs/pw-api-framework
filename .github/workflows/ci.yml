@@ -62,7 +62,7 @@ jobs:
           include_time_in_summary: true
           group_suite: true
           fail_on_failure: true
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
