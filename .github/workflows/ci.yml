@@ -52,7 +52,7 @@ jobs:
           BASE_URL: ${{ secrets.BASE_URL }}
           TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
           TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
-      - uses: step-security/test-reporter@v1
+      - uses: step-security/test-reporter@v2
         if: ${{ !cancelled() }}
         with:
           name: Test Results
