@@ -19,7 +19,8 @@
     "docker:test": "docker compose run --rm tests",
     "docker:test:verbose": "docker compose run --rm -e API_LOG=verbose tests",
     "docker:test:smoke": "docker compose run --rm tests npx playwright test --grep @smoke",
-    "docker:test:schema": "docker compose run --rm tests npx playwright test --grep @schema"
+    "docker:test:schema": "docker compose run --rm tests npx playwright test --grep @schema",
+    "prepare": "husky"
   },
   "keywords": [
     "playwright",
@@ -33,6 +34,9 @@
   "engines": {
     "node": ">=18.0.0"
   },
+  "lint-staged": {
+    "*.ts": "eslint --fix"
+  },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@faker-js/faker": "^10.3.0",
@@ -44,6 +48,8 @@
     "dotenv": "^17.3.1",
     "eslint": "^10.0.3",
     "eslint-plugin-playwright": "^2.10.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.57.0"
