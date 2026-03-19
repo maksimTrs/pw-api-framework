@@ -43,6 +43,8 @@ tools/                      — utility scripts (HAR filter)
 playwright.config.ts        — Playwright configuration
 tsconfig.json               — TypeScript strict config with path aliases
 eslint.config.mjs           — ESLint 9 flat config
+Dockerfile                  — Container image for running tests
+docker-compose.yml          — Docker Compose with env_file and report volumes
 ```
 
 ## Setup
@@ -62,14 +64,44 @@ cp .env.example .env
 
 ## Scripts
 
-| Command | Description |
-|---|---|
-| `npm test` | Run all tests |
-| `npm run test:verbose` | Run with detailed request/response logging |
-| `npm run test:grep -- @smoke` | Run tests by tag |
-| `npm run test:schema` | Run schema validation tests |
-| `npm run lint` | Check code style |
-| `npm run lint:fix` | Auto-fix lint errors |
+| Command                       | Description                                |
+|-------------------------------|--------------------------------------------|
+| `npm test`                    | Run all tests                              |
+| `npm run test:verbose`        | Run with detailed request/response logging |
+| `npm run test:grep -- @smoke` | Run tests by tag                           |
+| `npm run test:schema`         | Run schema validation tests                |
+| `npm run lint`                | Check code style                           |
+| `npm run lint:fix`            | Auto-fix lint errors                       |
+| `npm run docker:build`        | Build Docker image                         |
+| `npm run docker:test`         | Run tests in Docker                        |
+| `npm run docker:test:verbose` | Run in Docker with verbose logging         |
+
+## Docker
+
+Run tests in an isolated container. Requires [Docker Desktop](https://www.docker.com/products/docker-desktop/).
+
+```bash
+# Build image (first time or after dependency changes)
+npm run docker:build
+
+# Run all tests
+npm run docker:test
+
+# Run with verbose logging
+npm run docker:test:verbose
+
+# Run smoke tests only
+npm run docker:test:smoke
+
+# Run schema validation tests
+npm run docker:test:schema
+```
+
+Reports are automatically mounted to `./playwright-report/` on the host:
+
+```bash
+npx playwright show-report
+```
 
 ## HAR Converter
 

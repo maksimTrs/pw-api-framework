@@ -1,0 +1,32 @@
+# Security: secrets must NEVER enter the build context
+.env
+
+# Recreated inside container
+node_modules/
+
+# Test artifacts from previous local runs
+test-results/
+playwright-report/
+blob-report/
+
+# Version control
+.git/
+.gitignore
+
+# IDE
+.idea/
+
+# Claude Code config
+.claude/
+CLAUDE.md
+
+# Local docs
+docs/
+README.md
+
+# HAR recordings
+*.har
+filtered-har.json
+
+# CI config (not used inside container)
+.github/

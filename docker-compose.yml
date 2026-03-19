@@ -1,0 +1,9 @@
+services:
+  tests:
+    build: .
+    init: true
+    env_file:
+      - .env
+    volumes:
+      - ./playwright-report:/app/playwright-report
+      - ./test-results:/app/test-results

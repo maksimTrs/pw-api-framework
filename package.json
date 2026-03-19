@@ -14,7 +14,12 @@
     "test:verbose:schema": "cross-env API_LOG=verbose playwright test --grep @schema",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "har:filter": "npx tsx tools/harFilter.ts"
+    "har:filter": "npx tsx tools/harFilter.ts",
+    "docker:build": "docker compose build",
+    "docker:test": "docker compose run --rm tests",
+    "docker:test:verbose": "docker compose run --rm -e API_LOG=verbose tests",
+    "docker:test:smoke": "docker compose run --rm tests npx playwright test --grep @smoke",
+    "docker:test:schema": "docker compose run --rm tests npx playwright test --grep @schema"
   },
   "keywords": [
     "playwright",
