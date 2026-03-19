@@ -13,6 +13,8 @@ Playwright API test automation framework with TypeScript, AJV schema validation,
 - **Faker.js** — test data generation
 - **ESLint 9** — static analysis (flat config)
 - **GitHub Actions** — CI pipeline with lint, test, and report deployment
+- **Husky + lint-staged** — pre-commit hooks (ESLint on staged files)
+- **Dependabot** — automated dependency updates (npm + GitHub Actions)
 
 ## Architecture
 
@@ -34,6 +36,7 @@ Config & Data               — typed environment config, factories, schemas, mo
 tests/
   api/                      — API test specs
     schemas/                — JSON Schema validation tests
+  global.setup.ts           — API health check before test run
   fixtures/                 — Playwright fixtures (auth, API client, cleanup)
   helpers/                  — request handler, API clients, logger, schema validator, env config
   models/                   — TypeScript interfaces (Article, User, Tag, Error)
@@ -131,3 +134,5 @@ npx tsx tools/harFilter.ts my-recording.har output.json
 - **Request/response logging** — opt-in via `API_LOG=verbose`, sensitive fields masked as `[REDACTED]` in output
 - **Schema validation caching** — compiled AJV validators cached via `WeakMap` to avoid recompilation
 - **`as const` schemas** — all JSON Schema definitions are deeply readonly, preventing accidental mutation
+- **API health check** — `globalSetup` verifies API availability before tests run; fails fast with a clear message instead of timing out across all tests
+- **Pre-commit hooks** — Husky + lint-staged runs ESLint on staged `.ts` files at commit time, catching errors before CI
