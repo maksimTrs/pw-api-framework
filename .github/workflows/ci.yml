@@ -52,12 +52,11 @@ jobs:
           BASE_URL: ${{ secrets.BASE_URL }}
           TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
           TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
-      - uses: dorny/test-reporter@v1
+      - uses: mikepenz/action-junit-report@v5
         if: ${{ !cancelled() }}
         with:
-          name: Test Results
-          path: test-results/junit-report.xml
-          reporter: java-junit
+          report_paths: test-results/junit-report.xml
+          check_name: Test Results
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
