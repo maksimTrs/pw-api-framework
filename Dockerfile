@@ -1,7 +1,9 @@
-FROM node:22-slim
+FROM node:22.22-slim
 
 # API-only: skip Chromium/Firefox/WebKit download (~600MB saved)
 ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+# No git inside container — skip husky git-hooks setup
+ENV HUSKY=0
 
 WORKDIR /app
 

@@ -1,5 +1,6 @@
 # Security: secrets must NEVER enter the build context
 .env
+.env.*
 
 # Recreated inside container
 node_modules/
