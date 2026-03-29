@@ -3,7 +3,6 @@
     "target": "ES2022",
     "module": "CommonJS",
     "moduleResolution": "node",
-    "baseUrl": ".",
     "paths": {
       "@tests/*": ["tests/*"],
       "@fixtures/*": ["tests/fixtures/*"],
