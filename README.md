@@ -1,56 +1,89 @@
-# pw-api-framework
+# Playwright API Test Framework
 
 [![CI](https://github.com/maksimTrs/pw-api-framework/actions/workflows/ci.yml/badge.svg)](https://github.com/maksimTrs/pw-api-framework/actions/workflows/ci.yml)
+![Playwright](https://img.shields.io/badge/Playwright-1.58-45ba4b?logo=playwright&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178c6?logo=typescript&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-≥18-339933?logo=node.js&logoColor=white)
+![License](https://img.shields.io/badge/License-ISC-blue)
 
-Playwright API test automation framework with TypeScript, AJV schema validation, and GitHub Actions CI.
+Production-grade API test automation framework built with Playwright and TypeScript.
+Designed as a reference architecture for scalable, maintainable API testing.
 
+## Key Features
 
-## Tech Stack
-
-- **[Playwright Test](https://playwright.dev/)** — test runner, assertions, API client
-- **TypeScript** — strict mode, path aliases
-- **AJV** — JSON Schema response validation
-- **Faker.js** — test data generation
-- **ESLint 9** — static analysis (flat config)
-- **GitHub Actions** — CI pipeline with lint, test, and report deployment
-- **Husky + lint-staged** — pre-commit hooks (ESLint on staged files)
-- **Dependabot** — automated dependency updates (npm + GitHub Actions)
+- **Layered architecture** — transport, domain, fixture, and test layers with clear boundaries
+- **Strict TypeScript** — `strict: true` + `noUncheckedIndexedAccess`, typed models for all API shapes
+- **Dual-method API clients** — happy-path methods with built-in assertions + raw response methods for custom checks
+- **Custom matchers** — `toHaveStatus()` with detailed error output, `toMatchSchema()` for AJV validation
+- **Fixture-based DI** — worker-scoped auth, test-scoped API clients, automatic resource cleanup
+- **JSON Schema validation** — AJV with compiled validator caching via WeakMap
+- **Factory pattern** — `createArticlePayload(overrides?)` with Faker.js and `Partial<T>` support
+- **Request/response logging** — opt-in verbose mode with sensitive field masking
+- **CI/CD pipeline** — GitHub Actions: lint → test → JUnit report → HTML report on GitHub Pages
+- **Docker support** — Alpine-based container with layer caching and proper signal handling
+- **Pre-commit hooks** — Husky + lint-staged runs ESLint on staged files
 
 ## Architecture
 
-```
-Test Layer (specs)          — business logic assertions, test scenarios
-    ↓
-Domain Layer (API clients)  — typed ArticleApi with dual-method approach (happy-path + raw)
-    ↓
-Fixture Layer               — auth management, API client injection, cleanup
-    ↓
-Transport Layer (helpers)   — generic HTTP handler, request/response logging
-    ↓
-Config & Data               — typed environment config, factories, schemas, models
+```mermaid
+graph TD
+    A["<b>Test Layer</b><br/>smoke.spec.ts, auth.spec.ts<br/><i>Business assertions, test scenarios</i>"] --> B
+    B["<b>Domain Layer</b><br/>ArticleApi, ProfileApi<br/><i>Typed methods + raw response methods</i>"] --> C
+    C["<b>Fixture Layer</b><br/>fixtures/api.ts<br/><i>Auth, DI, cleanup, custom matchers</i>"] --> D
+    D["<b>Transport Layer</b><br/>RequestHandler<br/><i>Generic HTTP, logging, header composition</i>"] --> E
+    E["<b>Config & Data</b><br/>envConfig, factories, schemas, models<br/><i>Typed env, test data, AJV schemas</i>"]
+
+    style A fill:#4a9eff,stroke:#2d7cd6,color:#fff
+    style B fill:#22c55e,stroke:#16a34a,color:#fff
+    style C fill:#f59e0b,stroke:#d97706,color:#fff
+    style D fill:#ef4444,stroke:#dc2626,color:#fff
+    style E fill:#8b5cf6,stroke:#7c3aed,color:#fff
 ```
 
 ## Project Structure
 
 ```
 tests/
-  api/                      — API test specs
+  api/                      — API test specs (one file per resource/feature)
     schemas/                — JSON Schema validation tests
-  global.setup.ts           — API health check before test run
-  fixtures/                 — Playwright fixtures (auth, API client, cleanup)
-  helpers/                  — request handler, API clients, logger, schema validator, env config
-  models/                   — TypeScript interfaces (Article, User, Tag, Error)
+  fixtures/                 — Playwright fixtures (auth, API clients, cleanup, custom matchers)
+  helpers/                  — RequestHandler, API clients, logger, schema validator, env config
+  models/                   — TypeScript interfaces (Article, User, Profile, Tag, Error)
   data/                     — test data factories and constants
   schemas/                  — AJV JSON Schema definitions
-tools/                      — utility scripts (HAR filter)
-playwright.config.ts        — Playwright configuration
-tsconfig.json               — TypeScript strict config with path aliases
-eslint.config.mjs           — ESLint 9 flat config
-Dockerfile                  — Container image for running tests
-docker-compose.yml          — Docker Compose with env_file and report volumes
+  global.setup.ts           — API health check before test run
+playwright.config.ts
+tsconfig.json
+eslint.config.mjs
+Dockerfile
+docker-compose.yml
 ```
 
-## Setup
+## Test Example
+
+```typescript
+test('POST /articles', {tag: '@smoke'}, async ({articleApi, articleCleanup}) => {
+    const payload = createArticlePayload();
+
+    const response = await articleApi.createArticleResponse(payload);
+
+    await expect(response).toHaveStatus(201);
+
+    const body = await response.json() as ArticleResponse;
+    articleCleanup.track(body.article.slug);
+
+    expect.soft(body.article.title).toBe(payload.article.title);
+    expect.soft(body.article.author.username).toBeTruthy();
+});
+```
+
+Key patterns visible:
+- **`articleApi`** — domain client injected via fixture (authenticated)
+- **`articleCleanup.track()`** — registers resource for automatic teardown
+- **`toHaveStatus(201)`** — custom matcher with URL and body in error output
+- **`expect.soft()`** — continues after failure, reports all mismatches
+
+## Getting Started
 
 ```bash
 # Clone
@@ -62,77 +95,69 @@ npm install
 
 # Configure environment
 cp .env.example .env
-# Edit .env with your credentials
+# Edit .env with your Conduit API credentials
 ```
 
-## Scripts
+## Running Tests
 
-| Command                       | Description                                |
-|-------------------------------|--------------------------------------------|
-| `npm test`                    | Run all tests                              |
-| `npm run test:verbose`        | Run with detailed request/response logging |
-| `npm run test:grep -- @smoke` | Run tests by tag                           |
-| `npm run test:schema`         | Run schema validation tests                |
-| `npm run lint`                | Check code style                           |
-| `npm run lint:fix`            | Auto-fix lint errors                       |
-| `npm run docker:build`        | Build Docker image                         |
-| `npm run docker:test`         | Run tests in Docker                        |
-| `npm run docker:test:verbose` | Run in Docker with verbose logging         |
+| Command | Description |
+|---|---|
+| `npm test` | Run all tests |
+| `npm run test:verbose` | Run with request/response logging |
+| `npm run test:grep -- @smoke` | Run tests by tag |
+| `npm run test:grep -- @security` | Run security/auth tests |
+| `npm run test:schema` | Run schema validation tests |
+| `npm run lint` | Check code style |
+| `npm run lint:fix` | Auto-fix lint errors |
 
 ## Docker
 
-Run tests in an isolated container. Requires [Docker Desktop](https://www.docker.com/products/docker-desktop/).
+Run tests in an isolated container:
 
 ```bash
-# Build image (first time or after dependency changes)
-npm run docker:build
-
-# Run all tests
-npm run docker:test
-
-# Run with verbose logging
-npm run docker:test:verbose
-
-# Run smoke tests only
-npm run docker:test:smoke
-
-# Run schema validation tests
-npm run docker:test:schema
+npm run docker:build           # Build image
+npm run docker:test            # Run all tests
+npm run docker:test:verbose    # With request/response logging
+npm run docker:test:smoke      # Smoke tests only
+npm run docker:test:schema     # Schema tests only
 ```
 
-Reports are automatically mounted to `./playwright-report/` on the host:
+Reports mount to `./playwright-report/` on the host — open with `npx playwright show-report`.
 
-```bash
-npx playwright show-report
+## CI/CD
+
+The GitHub Actions pipeline runs on every push and PR to `main`:
+
+```
+Lint (ESLint) → Test (4 parallel workers) → JUnit Report → Deploy HTML Report to GitHub Pages
 ```
 
-## HAR Converter
+- Browser download skipped (API-only — saves ~600MB in CI)
+- Test results parsed via `mikepenz/action-junit-report` with detailed summary
+- HTML report deployed to GitHub Pages on `main` branch pushes
+- Dependabot keeps npm packages and GitHub Actions up to date
 
-Utility to extract and clean API entries from HAR files recorded via Playwright codegen:
+## Design Decisions
 
-```bash
-# 1. Record HAR
-npx playwright codegen --save-har=networking.har https://conduit-api.bondaracademy.com
+| Decision | Why |
+|---|---|
+| **Dual-method API clients** | Happy-path methods (`createArticle()`) return typed data with status assertion. Raw methods (`createArticleResponse()`) return `APIResponse` for negative tests, schema checks, and custom assertions. Both share the same transport — no duplication. |
+| **Worker-scoped auth** | Login once per worker via fixture chain: `loginUser` → `authToken` → `authApi` → `ArticleApi`. Tests share the token without re-authenticating — fast and parallel-safe. |
+| **Custom matchers over raw expect** | `toHaveStatus()` includes URL and response body in error output — no manual debugging. `toMatchSchema()` wraps AJV with human-readable error messages. |
+| **Fixture-based cleanup** | `articleCleanup` tracks slugs during test, deletes via `Promise.allSettled()` in teardown. Resilient to individual failures — one stuck resource doesn't block others. |
+| **Factory + Partial\<T\>** | `createArticlePayload(overrides?)` generates unique data with Faker.js. Override any field via `Partial<T>` — no fixtures files, no shared state. |
+| **Schema caching** | AJV validators compiled once, cached via `WeakMap` keyed by schema object reference. Same schema across tests = zero recompilation. |
+| **Typed environment config** | `envConfig.ts` validates required vars at startup and fails fast with a clear message — no cryptic `undefined` errors mid-test. |
 
-# 2. Filter — keeps only API entries, strips headers/cookies/timings
-npm run har:filter
-# Output: filtered-har.json
+## Tech Stack
 
-# With custom file paths
-npx tsx tools/harFilter.ts my-recording.har output.json
-```
-
-## Key Design Decisions
-
-- **Layered architecture** — transport (`RequestHandler`) knows nothing about endpoints; domain layer (`ArticleApi`) encapsulates endpoint logic with dual-method approach; fixtures handle auth and cleanup; test layer focuses on assertions
-- **Domain client dual-method approach** — happy-path methods (`createArticle()`) assert expected status and return typed data; raw methods (`createArticleResponse()`) return `APIResponse` for custom assertions and schema validation
-- **Custom matchers** — `toHaveStatus()` with detailed error output (URL, body), `toMatchSchema()` for AJV validation
-- **Worker-scoped auth** — login once per worker, share token across tests via fixture chain: `RequestHandler` → `withHeaders()` → `authApi` → `ArticleApi`
-- **Typed environment config** — single `envConfig.ts` validates all required env vars at startup, fails fast with clear error messages
-- **Article cleanup fixture** — tracks created articles, deletes in parallel via `Promise.allSettled()` in teardown (resilient to individual failures)
-- **Factory pattern** — `createArticlePayload(overrides?)` generates unique test data with `Partial<T>` support
-- **Request/response logging** — opt-in via `API_LOG=verbose`, sensitive fields masked as `[REDACTED]` in output
-- **Schema validation caching** — compiled AJV validators cached via `WeakMap` to avoid recompilation
-- **`as const` schemas** — all JSON Schema definitions are deeply readonly, preventing accidental mutation
-- **API health check** — `globalSetup` verifies API availability before tests run; fails fast with a clear message instead of timing out across all tests
-- **Pre-commit hooks** — Husky + lint-staged runs ESLint on staged `.ts` files at commit time, catching errors before CI
+| Tool | Version | Role |
+|---|---|---|
+| [Playwright Test](https://playwright.dev/) | 1.58 | Test runner, assertions, API client |
+| TypeScript | 5.9 | Strict static typing |
+| AJV | 8.18 | JSON Schema validation |
+| Faker.js | 10.3 | Test data generation |
+| ESLint | 10.0 | Static analysis (flat config) |
+| Husky + lint-staged | 9.1 / 16.4 | Pre-commit hooks |
+| Docker | Alpine | Containerized test execution |
+| GitHub Actions | — | CI/CD pipeline |

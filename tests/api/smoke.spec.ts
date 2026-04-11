@@ -88,3 +88,29 @@ test.describe('Smoke tests', () => {
         });
     });
 });
+
+test.describe('Unauthorized access', () => {
+
+    test('POST /articles without auth token returns 401', {tag: ['@security', '@articles']}, async ({api}) => {
+        const payload = createArticlePayload();
+
+        const response = await api.post({
+            path: '/articles',
+            body: payload,
+        });
+
+        await expect(response).toHaveStatus(401);
+    });
+
+    test('DELETE /articles/:slug without auth token returns 401', {tag: ['@security', '@articles']}, async ({api, trackedArticleApi}) => {
+        const article = await test.step('Setup: create article as authenticated user', async () => {
+            return trackedArticleApi.createArticle(createArticlePayload());
+        });
+
+        const response = await test.step('Attempt delete without auth', async () => {
+            return api.delete({path: `/articles/${article.slug}`});
+        });
+
+        await expect(response).toHaveStatus(401);
+    });
+});
