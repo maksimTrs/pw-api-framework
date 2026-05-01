@@ -39,19 +39,19 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@faker-js/faker": "^10.3.0",
-    "@playwright/test": "^1.58.2",
-    "@types/node": "^25.5.0",
-    "ajv": "^8.18.0",
+    "@faker-js/faker": "^10.4.0",
+    "@playwright/test": "^1.59.1",
+    "@types/node": "^25.6.0",
+    "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
     "cross-env": "^10.1.0",
-    "dotenv": "^17.3.1",
-    "eslint": "^10.0.3",
-    "eslint-plugin-playwright": "^2.10.0",
+    "dotenv": "^17.4.2",
+    "eslint": "^10.2.1",
+    "eslint-plugin-playwright": "^2.10.2",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3",
-    "typescript-eslint": "^8.57.0"
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.59.1"
   }
 }
